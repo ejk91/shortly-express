@@ -26,7 +26,7 @@ var checkUser = function(username, callback) {
       callback(err, null);
     } else {
       //console.log('database' + results);
-      console.log('fred:' + JSON.stringify(results));
+      // console.log('fred:' + JSON.stringify(results));
       callback(null, results);
 
     }

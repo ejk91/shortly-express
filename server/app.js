@@ -113,10 +113,16 @@ app.post('/login', function(req, res, next) {
   var cryptPass = shasum.digest('hex');
 
   Users.checkUser(user, function(err, results) {
-    if (err) {
+    // console.log('error' , err);
+    // console.log('results' , results);
+    if (err || results.length === 0) {
       res.redirect('/login');
-    } else if (results[0].username === user && results[0].password === cryptPass) {
-      res.redirect('/');
+    } else if (results) {
+      if (results[0].username === user && results[0].password === cryptPass) {
+        res.redirect('/');  
+      } else {
+        res.redirect('/login');
+      }
     }
   });
 

@@ -3,6 +3,7 @@ var path = require('path');
 var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
+var crypto = require('crypto');
 
 var Users = require('./models/user');
 var Links = require('./models/link');
@@ -82,9 +83,23 @@ function(req, res, next) {
   });
 });
 
+app.post('/signup', function(req, res, next) {
+  var user = req.body.username;
+  var pass = req.body.password;
+  var shasum = crypto.createHash('sha1');
+  shasum.update(pass);
+  var newPass = shasum.digest('hex');
+
+
+  console.log('username: ', user);
+  console.log(newPass);
+
+  Users.addUser(user, newPass, next);
+});
 /************************************************************/
 // Write your authentication routes here
 /************************************************************/
+
 
 
 

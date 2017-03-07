@@ -5,7 +5,7 @@ module.exports = function(db) {
     db = Promise.promisifyAll(db);
   }
 
-  // Create links table
+  // Create links table -shorten websites
   return db.queryAsync('CREATE TABLE IF NOT EXISTS links (\
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,\
     url VARCHAR(255),\
@@ -16,10 +16,22 @@ module.exports = function(db) {
     timestamp TIMESTAMP\
     );')
   .then(function() {
-    // Create clicks table
+    // Create clicks table // tells us the timestamp of each click for a link
     return db.queryAsync('CREATE TABLE IF NOT EXISTS clicks (\
       id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,\
       linkId INT,\
+      timestamp TIMESTAMP\
+      );');
+  }).then(function() {
+    return db.queryAsync('CREATE TABLE IF NOT EXISTS cookie (\
+      id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,\
+      sessionKey VARCHAR(255)\
+      );');
+  }).then(function () {
+    return db.queryAsync( 'CREATE TABLE IF NOT EXISTS users (\
+      id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,\
+      username VARCHAR(255) UNIQUE KEY,\
+      password VARCHAR(255),\
       timestamp TIMESTAMP\
       );');
   })
@@ -31,3 +43,8 @@ module.exports = function(db) {
     console.log(err);
   });
 };
+
+
+// FOREIGN KEY (cookieID) REFERENCES cookie(id)
+      // salt VARCHAR(255),\
+      // cookieID INT\

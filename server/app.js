@@ -84,17 +84,42 @@ function(req, res, next) {
 });
 
 app.post('/signup', function(req, res, next) {
+
   var user = req.body.username;
   var pass = req.body.password;
   var shasum = crypto.createHash('sha1');
   shasum.update(pass);
   var newPass = shasum.digest('hex');
 
+  // console.log('username: ', user);
+  // console.log(newPass);
 
-  console.log('username: ', user);
-  console.log(newPass);
+  Users.addUser(user, newPass, function(err, results) {
+    if (err) {
+      res.redirect('/signup');
+    } 
+    if (results) {
+      res.redirect('/');
+    }
+    
+  });
+});
 
-  Users.addUser(user, newPass, next);
+app.post('/login', function(req, res, next) {
+  var user = req.body.username;
+  var pass = req.body.password;
+  var shasum = crypto.createHash('sha1');
+  shasum.update(pass);
+  var cryptPass = shasum.digest('hex');
+
+  Users.checkUser(user, function(err, results) {
+    if (err) {
+      res.redirect('/login');
+    } else if (results[0].username === user && results[0].password === cryptPass) {
+      res.redirect('/');
+    }
+  });
+
 });
 /************************************************************/
 // Write your authentication routes here

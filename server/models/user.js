@@ -9,11 +9,29 @@ var addUser = function(users, password, callback) {
 
   db.query(queryString, user, function(err, results, fields) {
     if (err) {
-      callback(err);
+      // console.log('ERROR');
+      callback(err, null);
     } else {
-      callback(results);
+      // console.log('RESULTS');
+      callback(null, results);
     }
   });
+};
+
+var checkUser = function(username, callback) {
+  var queryString = 'SELECT username, password FROM users WHERE username = "' + username + '"';
+
+  db.query(queryString, function(err, results, fields) {
+    if (err) {
+      callback(err, null);
+    } else {
+      //console.log('database' + results);
+      console.log('fred:' + JSON.stringify(results));
+      callback(null, results);
+
+    }
+  });
+
 };
 
 // var app = express();
@@ -42,6 +60,6 @@ var addUser = function(users, password, callback) {
 // Write you user database model methods here
 
 module.exports = { 
-  addUser: addUser
-
+  addUser: addUser,
+  checkUser: checkUser
 };

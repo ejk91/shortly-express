@@ -87,14 +87,12 @@ app.post('/signup', function(req, res, next) {
 
   var user = req.body.username;
   var pass = req.body.password;
-  var shasum = crypto.createHash('sha1');
-  shasum.update(pass);
-  var newPass = shasum.digest('hex');
+  var hashedPass = util.hasher(pass);
 
   // console.log('username: ', user);
   // console.log(newPass);
 
-  Users.addUser(user, newPass, function(err, results) {
+  Users.addUser(user, hashedPass, function(err, results) {
     if (err) {
       res.redirect('/signup');
     } 
@@ -108,9 +106,7 @@ app.post('/signup', function(req, res, next) {
 app.post('/login', function(req, res, next) {
   var user = req.body.username;
   var pass = req.body.password;
-  var shasum = crypto.createHash('sha1');
-  shasum.update(pass);
-  var cryptPass = shasum.digest('hex');
+  var hashed = util.hasher(pass);
 
   Users.checkUser(user, function(err, results) {
     // console.log('error' , err);
@@ -118,7 +114,7 @@ app.post('/login', function(req, res, next) {
     if (err || results.length === 0) {
       res.redirect('/login');
     } else if (results) {
-      if (results[0].username === user && results[0].password === cryptPass) {
+      if (results[0].username === user && results[0].password === hashed) {
         res.redirect('/');  
       } else {
         res.redirect('/login');

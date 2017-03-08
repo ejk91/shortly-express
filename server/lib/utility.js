@@ -21,3 +21,10 @@ exports.isValidUrl = function(url) {
 // Add additional utility functions below
 /************************************************************/
 
+exports.hasher = function(toHash) {
+  var shasum = crypto.createHash('sha1');
+  shasum.update(toHash);
+  var newPass = shasum.digest('hex');
+
+  return newPass;
+};

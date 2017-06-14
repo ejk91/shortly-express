@@ -21,10 +21,27 @@ exports.isValidUrl = function(url) {
 // Add additional utility functions below
 /************************************************************/
 
-exports.hasher = function(toHash) {
-  var shasum = crypto.createHash('sha1');
-  shasum.update(toHash);
-  var newPass = shasum.digest('hex');
+// exports.hasher = function(toHash) {
+//   var shasum = crypto.createHash('sha1');
+//   shasum.update(toHash);
+//   var newPass = shasum.digest('hex');
 
-  return newPass;
-};
+//   return newPass;
+// };
+
+exports.createSalt = function() {
+  var salt = crypto.randomBytes(20).toString('hex');
+  return salt;
+}
+
+exports.createHash = function(data, salt) {
+  var newPassword = crypto.createHash('sha1');
+  newPassword.update(data + salt);
+  newPassword.digest('hex');
+  return newPassword;
+}
+
+exports.compareHash(attempted, stored, salt) {
+  var attempt = this.createHash(attempted, salt);
+  return (stored === attempt);
+}

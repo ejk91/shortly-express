@@ -32,12 +32,14 @@ module.exports = function(db) {
       id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,\
       username VARCHAR(255) UNIQUE KEY,\
       password VARCHAR(255),\
+      salt VARCHAR(255), \
       timestamp TIMESTAMP\
       );');
   }).then(function () {
     return db.queryAsync( 'CREATE TABLE IF NOT EXISTS sessions (\
       id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,\
       hash VARCHAR(255) UNIQUE KEY,\
+      salt VARCHAR(255), \
       user_id INT,\
       timestamp TIMESTAMP\
       );');

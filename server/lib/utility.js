@@ -41,7 +41,7 @@ exports.createHash = function(data, salt) {
   return newPassword;
 }
 
-exports.compareHash(attempted, stored, salt) {
+exports.compareHash = function(attempted, stored, salt) {
   var attempt = this.createHash(attempted, salt);
   return (stored === attempt);
 }

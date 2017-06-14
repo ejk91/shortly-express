@@ -1,5 +1,8 @@
 var parseCookies = function(req, res, next) {
-  var cookies = req.headers.cookie;
+  var cookies = req.get('Cookie');
+  /*
+  this can be optimized using reduce instead of looping through each index
+
   var cookiesObj = {};
   if (cookies) {
     cookies = cookies.split('; ');
@@ -14,12 +17,23 @@ var parseCookies = function(req, res, next) {
     });
   }
 
-  // console.log(cookies);
   req.cookies = cookiesObj;
-  next();
-  console.log(cookiesObj);
-  console.log(req.cookies);
+  console.log('Cookie', cookies);
+  */
 
+  req.cookies = cookies.split(';')
+    .reduce((cookie, item) => {
+      let parts = item.split('='); //finds string after equal
+      if (parts.length > 1) {
+        let key = parts[0].trim();
+        let val = parts[1].trim();
+        cookie[key] = val;
+      }
+      return cookie;
+    }, {});
+
+
+  next();
 };
 
 module.exports = parseCookies;

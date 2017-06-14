@@ -11,7 +11,7 @@ var getOne = function(query) {
   
   return db.queryAsync(queryString, query.data)
     .then(function(results) {
-      var link = results[0];
+      var link = results[0][0];
       return link;
     });
 };

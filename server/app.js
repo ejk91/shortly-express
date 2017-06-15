@@ -83,50 +83,77 @@ function(req, res, next) {
   });
 });
 
-app.post('/signup', function(req, res, next) {
 
-  var user = req.body.username;
-  var pass = req.body.password;
-  var hashedPass = util.hasher(pass);
-
-  // console.log('username: ', user);
-  // console.log(newPass);
-
-  Users.addUser(user, hashedPass, function(err, results) {
-    if (err) {
-      res.redirect('/signup');
-    } 
-    if (results) {
-      res.redirect('/');
-    }
-    
-  });
-});
-
-app.post('/login', function(req, res, next) {
-  var user = req.body.username;
-  var pass = req.body.password;
-  var hashed = util.hasher(pass);
-
-  Users.checkUser(user, function(err, results) {
-    // console.log('error' , err);
-    // console.log('results' , results);
-    if (err || results.length === 0) {
-      res.redirect('/login');
-    } else if (results) {
-      if (results[0].username === user && results[0].password === hashed) {
-        res.redirect('/');  
-      } else {
-        res.redirect('/login');
-      }
-    }
-  });
-
-});
 /************************************************************/
 // Write your authentication routes here
 /************************************************************/
+app.get('/login', function(req, res) {
+  res.render('login');
+});
 
+app.post('/login', function(req, res, next) {
+  var username = req.body.username;
+  var password = req.body.password;
+
+  Users.checkUser(username)
+    .then(function(user) {
+      if (!user || !util.compareHash(password, user.password, user.salt)) {
+        throw new Error('Invalid Username or password');
+      }
+      return Sessions.assignSession(user, req.session.hash);
+    })
+    .then(function() {
+      res.redirect('/');
+    })
+    .error(function(error) {
+      next({ status: 500, error: error });
+    })
+    .catch(function(user) {
+      res.redirect('/login');
+    });
+});
+
+app.get('/signup', function(req, res) {
+  res.render('signup');
+});
+
+app.post('/signup', function(req, res, next) {
+  var username = req.body.username;
+  var password = req.body.password;
+
+  Users.checkUser(username)
+    .then(function(user) {
+      if (user) {
+        throw new Error('User exists');
+      }
+      return Users.addUser({ username: username, password: password });
+    })
+    .then(function(user) {
+      return Sessions.assignSession(user, req.session.hash);
+    })
+    .then(function() {
+      res.redirect('/');
+    })
+    .error(function(error) {
+      next({ status: 500, error: error });
+    })
+    .catch(function() {
+      res.redirect('/signup');
+    });
+
+});
+
+app.get('/logout', function(req, res, next) {
+
+  return Sessions.destroySession(req.cookies.shortlyid)
+    .then(function() {
+      res.clearCookie('shortlyid');
+      res.redirect('/login');
+    })
+    .error(function(error) {
+      next({ status: 500, error: error });
+    });
+});
 
 
 
@@ -162,6 +189,8 @@ app.get('/*', function(req, res, next) {
   });
 });
 
+
+// error handler
 app.use(function(err, req, res, next) {
   if (!err.error) {
     return res.sendStatus(err.status);

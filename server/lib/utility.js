@@ -45,3 +45,22 @@ exports.compareHash = function(attempted, stored, salt) {
   var attempt = this.createHash(attempted, salt);
   return (stored === attempt);
 }
+
+
+// express middleware - check user session if logged in
+
+let isLoggedIn = (req) => {
+  return req.session ? !!req.session.user : false;
+};
+
+exports.checkUser = (req, res, next) => {
+  if (!isLoggedIn(req)) {
+    res.redirect('/login');
+  } else {
+    next();
+  }
+};
+
+
+
+

@@ -22,30 +22,26 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Serve static files from ../public directory
 app.use(express.static(path.join(__dirname, '../public')));
 
-app.get('/', 
-function(req, res) {
+app.get('/', util.checkUser, function(req, res) {
   res.render('index');
 });
 
-app.get('/create', 
-function(req, res) {
+app.get('/create', util.checkUser, function(req, res) {
   res.render('index');
 });
 
-app.get('/links', 
-function(req, res, next) {
+app.get('/links', util.checkUser, function(req, res, next) {
   Links.getAll()
-  .then(function(results) {
-    var links = results[0];
-    res.status(200).send(links);
-  })
-  .error(function(error) {
-    next({ status: 500, error: error });
-  });
+    .then(function(results) {
+      var links = results[0];
+      res.status(200).send(links);
+    })
+    .error(function(error) {
+      next({ status: 500, error: error });
+    });
 });
 
-app.post('/links', 
-function(req, res, next) {
+app.post('/links', util.checkUser, function(req, res, next) {
   var uri = req.body.url;
 
   if (!util.isValidUrl(uri)) {
@@ -54,35 +50,34 @@ function(req, res, next) {
   }
 
   return Links.getOne({ type: 'url', data: uri })
-  .then(function(results) {
-    if (results.length) {
-      var existingLink = results[0];
-      throw existingLink;
-    }
-    return util.getUrlTitle(uri);
-  })
-  .then(function(title) {
-    return Links.addOne({
-      url: uri,
-      title: title,
-      baseUrl: req.headers.origin
+    .then(function(results) {
+      if (results.length) {
+        var existingLink = results[0];
+        throw existingLink;
+      }
+      return util.getUrlTitle(uri);
+    })
+    .then(function(title) {
+      return Links.addOne({
+        url: uri,
+        title: title,
+        baseUrl: req.headers.origin
+      });
+    })
+    .then(function() {
+      return Links.getOne({ type: 'url', data: uri });
+    })
+    .then(function(results) {
+      var link = results[0];
+      res.status(200).send(link);
+    })
+    .error(function(error) {
+      next({ status: 500, error: error });
+    })
+    .catch(function(link) {
+      res.status(200).send(link);
     });
-  })
-  .then(function() {
-    return Links.getOne({ type: 'url', data: uri });
-  })
-  .then(function(results) {
-    var link = results[0];
-    res.status(200).send(link);
-  })
-  .error(function(error) {
-    next({ status: 500, error: error });
-  })
-  .catch(function(link) {
-    res.status(200).send(link);
-  });
 });
-
 
 /************************************************************/
 // Write your authentication routes here
@@ -167,26 +162,26 @@ app.get('/*', function(req, res, next) {
   var code = req.params[0];
   var link;
   return Links.getOne({ type: 'code', data: code })
-  .then(function(results) {
-    link = results[0];
+    .then(function(results) {
+      link = results[0];
 
-    if (!link) {
-      throw new Error('Link does not exist');
-    }
-    return Click.addClick(link.id);
-  })
-  .then(function() {
-    return Links.incrementVisit(link);
-  })
-  .then(function() {
-    res.redirect(link.url);
-  })
-  .error(function(error) {
-    next({ status: 500, error: error });
-  })
-  .catch(function() {
-    res.redirect('/');
-  });
+      if (!link) {
+        throw new Error('Link does not exist');
+      }
+      return Click.addClick(link.id);
+    })
+    .then(function() {
+      return Links.incrementVisit(link);
+    })
+    .then(function() {
+      res.redirect(link.url);
+    })
+    .error(function(error) {
+      next({ status: 500, error: error });
+    })
+    .catch(function() {
+      res.redirect('/');
+    });
 });
 
 

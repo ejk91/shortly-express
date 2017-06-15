@@ -16,7 +16,7 @@ let initializeSession = (agent) => {
     .then((result) => {
       session.id = result[0].insertId;
       return session;
-    })
+    });
 };
 
 let getSession = (token) => {
@@ -28,13 +28,13 @@ let getSession = (token) => {
 
       // if there is no session
       if (!session || !session.user_id) {
-        return session
+        return session;
       } else {
-      return db.queryAsync('SELECT username FROM users WHERE id = ?', session.user_id)
-        .then((result) => {
-          session.user = result[0][0];
-          return session
-        });
+        return db.queryAsync('SELECT username FROM users WHERE id = ?', session.user_id)
+          .then((result) => {
+            session.user = result[0][0];
+            return session;
+          });
       }  
     });
 };
@@ -44,12 +44,12 @@ let assignSession = (user, sessionHash) => {
   let queryString = 'UPDATE sessions SET user_id = ? WHERE hash = ?';
   return db.queryAsync(queryString, [user.id, sessionHash])
     .return(user);
-}
+};
 
 let destroySession = (token) => {
   let queryString = 'DELETE FROM sessions WHERE hash = ?';
   return db.queryAsync(queryString, token);
-}
+};
 
 
 module.exports = {

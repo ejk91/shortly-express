@@ -3,6 +3,7 @@ var utils = require('../lib/utility');
 var bodyParser = require('body-parser');
 var express = require('express');
 
+/*
 var addUser = function(users, password, callback) {
   var queryString = 'INSERT INTO users SET ?';
   var user = { username: users, password: password };
@@ -31,33 +32,41 @@ var checkUser = function(username, callback) {
 
     }
   });
+};
+*/
 
+// REFRACTOR TO ES6
+
+let addUser = (user) => {
+  let timestamp = Date.now();
+  let salt = utils.createSalt(timestamp);
+
+  let newUser = {
+    username: user.username,
+    passworld: utils.createHash(user.password, salt),
+    salt: salt
+  };
+
+  let queryString = 'INSERT INTO users SET ?';
+  return db.queryAsync(queryString, newUser)
+    .then((results) => {
+      let obj = {
+        id: results[0].insertId,
+        username: newUser.username
+      };
+      return obj;
+    });
 };
 
-// var app = express();
-// app.use(bodyParser.json());
+let checkUser = (username) => {
+  //returns user id
+  let queryString = 'SELECT * FROM users WHERE username = ?';
 
-// app.get('/links', function(req, res) {
-  
-// });
-
-// app.post('/links', function(req, res) {
-//   //we receive a username and password
-//   //it will either insert or will throw an error due to duplications
-//   //call back database, check to see if username is within users database
-//   //if it is, then we tell the user they must choose a new username, throw error
-
-//   console.log(req, body);
-//   console.log('post ' + req.body.username + ' ' + req.body.password);
-
-// });
-
-// app.options('', function(req, res) {
-
-// });
-
-
-// Write you user database model methods here
+  return db.queryAsync(queryString, username)
+    .then((results) =>{
+      return results[0][0];
+    });
+};
 
 module.exports = { 
   addUser: addUser,
